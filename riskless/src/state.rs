@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, Timestamp};
+use cosmwasm_std::{Addr, Timestamp, Uint128};
 use cw_storage_plus::{Map};
 use cw_controllers::{Admin};
 
@@ -17,11 +17,11 @@ pub struct Project {
     pub name: String,
     pub creator: Addr,
     pub fund_status: FundingStatus,
-    pub fund_target_amount: u32,
+    pub fund_target_amount: Uint128,
     pub fund_deadline: Timestamp,
     pub project_deadline: Timestamp,
-    pub fund_amount: u32,
-    pub fund_yield_amount: u32,
+    pub fund_amount: Uint128,
+    pub fund_yield_amount: Uint128,
 }
 
 /*
@@ -44,14 +44,9 @@ pub const PROJECTS: Map<&[u8], Project> = Map::new("projects");
         500_000_000 ($500 UST)
     }
 */
-pub const BALANCES: Map<(&Addr, &[u8]), u32> = Map::new("balances");
+pub const BALANCES: Map<(&Addr, &[u8]), Uint128> = Map::new("balances");
 
 /*
     Store contact admin
 */
 pub const ADMIN: Admin = Admin::new("admin");
-
-// /*
-//     Serves as auto-incrementer for project ids
-// */
-// pub const AUTOID: Item<Uint128> = Item::new("autoid");

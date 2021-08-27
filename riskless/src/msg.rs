@@ -1,9 +1,10 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::{Timestamp, Addr};
+use cosmwasm_std::{Timestamp, Uint128};
 use crate::state::{FundingStatus, Project};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct InstantiateMsg {
     pub admin: Option<String>,
 }
@@ -11,9 +12,10 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    CreateProject { id: String, name: String, target_amount: u32, fund_deadline: Timestamp, project_deadline : Timestamp },
-    FundProject { id: String, amount: u32 },
-    WithdrawProjectFunds { id: String, amount: u32 },
+    CreateProject { id: String, name: String, target_amount: Uint128, fund_deadline: Timestamp, project_deadline : Timestamp },
+    UpdateAdmin { new_admin: Option<String> } ,
+    FundProject { id: String },
+    WithdrawProjectFunds { id: String, amount: Uint128 },
     ChangeProjectFundingStatus { id: String, fund_status: FundingStatus},
     DepositProjectFundsToAnchor { id: String },
     WithdrawProjectFundsFromAnchor { id: String } ,
@@ -23,16 +25,17 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     GetProjectStatus { project_id : String },
-    GetUserBalance { project_id : String, user : Addr, },
+    GetUserBalance { project_id : String, user: Option<String> },
 }
 
-// We define a custom struct for each query response
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct ProjectStatusResponse {
     pub project_status: Project,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct UserBalanceResponse {
-    pub project_balance: u32,
+    pub user_balance: Uint128,
 }
