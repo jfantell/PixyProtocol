@@ -89,7 +89,7 @@ pub fn try_fund_project(deps: DepsMut, info: MessageInfo, id: String) -> Result<
             amount = coin.amount;
             BALANCES.update(deps.storage, (&info.sender, id.as_bytes()), | current_amount | -> Result<_, ContractError> {
                 Ok(current_amount.unwrap_or_default() + amount)
-            })?;
+            })?;            
             break;
         }
     }

@@ -1,0 +1,3 @@
+[submodule "LocalTerra"]
+	path = LocalTerra
+	url = https://github.com/terra-money/LocalTerra

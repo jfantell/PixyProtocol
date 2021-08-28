@@ -97,3 +97,8 @@ proper description in the README.
 
 [Gitpod](https://www.gitpod.io/) container-based development platform will be enabled on your project by default.
 Follow [Gitpod Getting Started](https://www.gitpod.io/docs/getting-started) launch your workspace.
+
+## Contract Deployment Instructions
+
+https://tequila-lcd.terra.dev
+git clone https://github.com/terra-project/localterra
