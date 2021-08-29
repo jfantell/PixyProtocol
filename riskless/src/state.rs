@@ -26,7 +26,8 @@ pub struct Project {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Config {
-    pub anchor_earn_contract_address: String
+    pub anchor_money_market_address: String,
+    pub a_ust_address: String,
 }
 
 /*

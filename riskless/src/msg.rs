@@ -7,7 +7,8 @@ use crate::state::{ProjectStatus, Project};
 #[serde(rename_all = "snake_case")]
 pub struct InstantiateMsg {
     pub admin: Option<String>,
-    pub anchor_earn_contract_address: Option<String> 
+    pub anchor_money_market_address: Option<String>,
+    pub a_ust_address: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

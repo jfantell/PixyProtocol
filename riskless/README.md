@@ -113,3 +113,5 @@ terrad tx wasm store my_contract.wasm --from test1 --chain-id=localterra --gas=a
 
 https://tequila-lcd.terra.dev
 git clone https://github.com/terra-project/localterra
+
+https://finder.terra.money/tequila-0004/address/terra15dwd5mj8v59wpj0wvt233mf5efdff808c5tkal

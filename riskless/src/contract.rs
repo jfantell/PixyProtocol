@@ -23,13 +23,18 @@ pub fn instantiate(
     let api = deps.api;
     ADMIN.set(deps.branch(), maybe_addr(api, msg.admin)?)?;
 
-    let anchor_earn_contract_address: String = match msg.anchor_earn_contract_address {
+    let anchor_money_market_address: String = match msg.anchor_money_market_address {
+        Some(x) => {x},
+        None => { return Err(ContractError::InvalidAddress {} ); }
+    };
+    let a_ust_address: String = match msg.a_ust_address {
         Some(x) => {x},
         None => { return Err(ContractError::InvalidAddress {} ); }
     };
 
     let cfg = Config {
-        anchor_earn_contract_address: anchor_earn_contract_address
+        anchor_money_market_address : anchor_money_market_address,
+        a_ust_address : a_ust_address
     };
     CONFIG.save(deps.storage, &cfg)?;
     Ok(Response::new().add_attribute("method", "instantiate"))
@@ -123,14 +128,14 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
     })?;
 
     // Deposit the UST into Anchor Earn
-    match deposit_stable_msg(&deps, deposit_amount, required_denom) {
-        Ok(_msg) => {
+    // match deposit_stable_msg(&deps, deposit_amount, required_denom) {
+    //     Ok(_msg) => {
             
-        },
-        Err(_) => {
-            return Err(ContractError::InvalidAddress {} );
-        }
-    }
+    //     },
+    //     Err(_) => {
+    //         return Err(ContractError::InvalidAddress {} );
+    //     }
+    // }
     
     Ok(Response::new()
         .add_attribute("action", "fund_project")
@@ -222,6 +227,23 @@ fn query_user_balance(deps: Deps, name : String, user: Option<String>) -> StdRes
     
 }
 
+// fn query_project_yield(deps: Deps, name : String) -> StdResult<UserBalanceResponse> {
+//     //
+
+//     // match user_addr {
+//     //     Some(addr) => {
+//     //         let balance = BALANCES.load(deps.storage, (&addr, name.as_bytes()))?;
+//     //         Ok(UserBalanceResponse { user_balance: balance })
+//     //     }
+//     //     None => {
+//     //         return Err(StdError::GenericErr {
+//     //             msg: "Invalid user address".to_string()
+//     //         } );
+//     //     }
+//     // }
+    
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -236,7 +258,7 @@ mod tests {
         let sender = "terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v";
 
         // Initialize smart contract
-        let msg = InstantiateMsg { admin: Some(sender.to_string()), anchor_earn_contract_address: Some(sender.to_string()) };
+        let msg = InstantiateMsg { admin: Some(sender.to_string()), anchor_money_market_address: Some(sender.to_string()), a_ust_address: Some(sender.to_string()) };
         let info = mock_info(sender, &coins(0, "uusd"));
         let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
         print!("{:?}\n", res);
