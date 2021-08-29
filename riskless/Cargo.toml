@@ -1,7 +1,13 @@
 [package]
 name = "riskless"
 version = "0.1.0"
-authors = ["John Fantell <jfantell@icloud.com>"]
+authors = [
+  "Poull Brien <book@bigeyestudios.com>", 
+  "Jeff Holek <Jeff.holek@gmail.com>", 
+  "Sumeet Mehra <sumeet.mehra@gmail.com>", 
+  "Tieg Zaharia <tieg.zaharia@gmail.com>",
+  "John Fantell <jfantell@icloud.com>",
+]
 edition = "2018"
 
 exclude = [

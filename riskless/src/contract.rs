@@ -123,15 +123,14 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
     })?;
 
     // Deposit the UST into Anchor Earn
-    // Update user's principal balance for the project
-    // match deposit_stable_msg(&deps, deposit_amount, required_denom) {
-    //     Ok(_) => {
+    match deposit_stable_msg(&deps, deposit_amount, required_denom) {
+        Ok(_msg) => {
             
-        // }
-        // Err(_) => {
-        //     return Err(ContractError::InvalidAddress {} );
-    //     // }
-    // }
+        },
+        Err(_) => {
+            return Err(ContractError::InvalidAddress {} );
+        }
+    }
     
     Ok(Response::new()
         .add_attribute("action", "fund_project")
