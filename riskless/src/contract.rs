@@ -57,7 +57,7 @@ pub fn execute(
             target_principal_amount,
             target_yield_amount,
             project_deadline,
-        } => create_project(deps, info, name, target_principal_amount, target_yield_amount, project_deadline),
+        } => create_project(deps, env, info, name, target_principal_amount, target_yield_amount, project_deadline),
         ExecuteMsg::FundProject {
             name,
         } => fund_project(deps, info, name),
@@ -67,19 +67,20 @@ pub fn execute(
         ExecuteMsg::ChangeProjectStatus {
             name,
             project_status
-        } => change_status(deps, info, name, project_status),
+        } => change_status(deps, env, info, name, project_status),
         ExecuteMsg::WidthdrawYield {
             name,
         } => withdraw_yield(deps, info, name) 
     }
 }
 
-pub fn create_project(deps: DepsMut, info: MessageInfo, name: String,
+pub fn create_project(deps: DepsMut, env: Env, info: MessageInfo, name: String,
     target_principal_amount: Uint128, target_yield_amount : Uint128, 
     project_deadline: Timestamp) -> Result<Response, ContractError> {
     // Create new project
     let project = Project {
         creator: info.sender,
+        creation_date : env.block.time,
         project_status: ProjectStatus::FundingInProgress,
         target_principal_amount: target_principal_amount,
         target_yield_amount: target_yield_amount,
@@ -97,6 +98,12 @@ pub fn create_project(deps: DepsMut, info: MessageInfo, name: String,
         .add_attribute("target_yield_amount", target_yield_amount.to_string()))
 }
 pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Response, ContractError> {
+    let state =  PROJECTS.load(deps.storage, name.as_bytes())?;
+    // If project off track, prevent backers from funding
+    if state.project_status == ProjectStatus::ProjectOffTrack {
+        return Err(ContractError::UnableToFundProject {} )
+    }
+
     // Extract amount of UST sent to contract
     let required_denom = "uusd".to_string();
     let deposit_amount: Uint128 = info.funds
@@ -110,10 +117,13 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
         return Err(ContractError::DepositMinimumError {} )
     }
 
+    // TO-DO: Deposit to Anchor
+
     // Update user balance
     BALANCES.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
         Ok(current_amount.unwrap_or_default() + deposit_amount)
     })?;
+
     // Update project stats
     PROJECTS.update(deps.storage, name.as_bytes(), | project | -> Result<_, ContractError> {
         match project {
@@ -126,16 +136,6 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
             }
         }
     })?;
-
-    // Deposit the UST into Anchor Earn
-    // match deposit_stable_msg(&deps, deposit_amount, required_denom) {
-    //     Ok(_msg) => {
-            
-    //     },
-    //     Err(_) => {
-    //         return Err(ContractError::InvalidAddress {} );
-    //     }
-    // }
     
     Ok(Response::new()
         .add_attribute("action", "fund_project")
@@ -146,49 +146,89 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
 
 pub fn withdraw_principal(deps: DepsMut, env: Env, info: MessageInfo, name: String) -> Result<Response, ContractError> {
     let state = PROJECTS.load(deps.storage, name.as_bytes())?;
-    let widthdraw_amount = BALANCES.load(deps.storage, (&info.sender, name.as_bytes()))?;
+    let withdraw_amount = BALANCES.load(deps.storage, (&info.sender, name.as_bytes()))?;
 
-    if (state.project_status != ProjectStatus::TargetMet) || (env.block.time != state.project_deadline) {
-        BALANCES.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
-            Ok(current_amount.unwrap_or_default() - widthdraw_amount)
-        })?;
-        
-        PROJECTS.update(deps.storage, name.as_bytes(), | project | -> Result<_, ContractError> {
-            match project {
-                Some(mut p) => {
-                    p.principal_amount -= widthdraw_amount;
-                    Ok(p)
-                },
-                None => {
-                    return Err(ContractError::UnableToUpdateContractState {} )
-                }
-            }
-        })?;
+    // Backers cannot withdraw principal if the following is true:
+    // project status is TargetMet && yield target has not been met
+    let yield_ = match get_yield_amount(&deps, &env, &info, &name) {
+        Ok(y) => { y },
+        Err(_) => { return Err(ContractError::UnableToAcquireYield {} ) }
+    };
+    
+    if (state.project_status == ProjectStatus::TargetMet) && ( yield_ < state.target_yield_amount ) {
+        return Ok(Response::new()
+            .add_attribute("action", "widthdraw_principal")
+            .add_attribute("status", "cannot withdraw principal: target funding met and yield less than target yield")
+            .add_attribute("sender", info.sender));
     }
     
+    BALANCES.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
+        Ok(current_amount.unwrap_or_default() - withdraw_amount)
+    })?;
+    
+    PROJECTS.update(deps.storage, name.as_bytes(), | project | -> Result<_, ContractError> {
+        match project {
+            Some(mut p) => {
+                p.principal_amount -= withdraw_amount;
+                Ok(p)
+            },
+            None => {
+                return Err(ContractError::UnableToUpdateContractState {} )
+            }
+        }
+    })?;
+
     Ok(Response::new()
         .add_attribute("action", "widthdraw_principal")
         .add_attribute("project_name", name)
-        .add_attribute("amount_uusd", widthdraw_amount.to_string())
+        .add_attribute("amount_uusd", withdraw_amount.to_string())
         .add_attribute("sender", info.sender))
 }
 
-pub fn change_status(deps: DepsMut, info: MessageInfo, name: String, project_status: ProjectStatus) -> Result<Response, ContractError> {
+pub fn get_yield_amount(deps: &DepsMut, env: &Env, info: &MessageInfo, name: &String) -> Result<Uint128, ContractError> {
+    let state = PROJECTS.load(deps.storage, name.as_bytes())?;
+    let start_amount = state.principal_amount;
+    let creation_date = state.creation_date;
+    let current_date = env.block.time;
+    let daily_rate = 0.05479;
+    let number_of_days = current_date.minus_seconds(creation_date.seconds()).seconds() / (60 * 60 * 24);
+    let yield_ = (start_amount * (1.0+daily_rate)^number_of_days - start_amount);
+    return yield_;
+}
+
+pub fn change_status(deps: DepsMut, env: Env, info: MessageInfo, name: String, project_status: Option<ProjectStatus>) -> Result<Response, ContractError> {
     let mut state = PROJECTS.load(deps.storage, name.as_bytes())?;
 
-    if (state.creator == info.sender) || ADMIN.is_admin(deps.as_ref(), &info.sender)? {
-        state.project_status = project_status.clone();
-        PROJECTS.save(deps.storage, name.as_bytes(), &state)?;
+    // Admin can change project to ProjectOffTrack at any time
+    if ADMIN.is_admin(deps.as_ref(), &info.sender)? {
+        match project_status.clone() {
+            Some(status) => { state.project_status = status }
+            None => {}
+        }
     }
-   
-    Ok(Response::new()
+
+    // Project deadline and principal amount target has been met, change status to TargetMet
+    // users can no longer widthdraw principal
+    if env.block.time >= state.project_deadline && state.project_status == ProjectStatus::FundingInProgress {
+        if state.principal_amount >= state.target_principal_amount {
+            state.project_status = ProjectStatus::TargetMet;
+        }
+        else {
+            state.project_status = ProjectStatus::ProjectOffTrack;
+        }
+    }
+
+    PROJECTS.save(deps.storage, name.as_bytes(), &state)?;
+    
+    return Ok(Response::new()
         .add_attribute("action", "change_status")
         .add_attribute("project_name", name)
-        .add_attribute("new_status", format!("{:?}", project_status))
-        .add_attribute("sender", info.sender))
+        .add_attribute("status", format!("{:?}", project_status.clone()))
+        .add_attribute("sender", info.sender));
 }
 
 pub fn withdraw_yield(deps: DepsMut, info: MessageInfo, name: String) -> Result<Response, ContractError> {
+
     let state = PROJECTS.load(deps.storage, name.as_bytes())?;
     if (state.creator == info.sender) || ADMIN.is_admin(deps.as_ref(), &info.sender)? {}
 

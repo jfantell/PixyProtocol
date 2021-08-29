@@ -18,7 +18,7 @@ pub enum ExecuteMsg {
     UpdateAdmin { new_admin: Option<String> } ,
     FundProject { name: String },
     WidthdrawPrincipal { name: String },
-    ChangeProjectStatus { name: String, project_status: ProjectStatus },
+    ChangeProjectStatus { name: String, project_status: Option<ProjectStatus> },
     WidthdrawYield { name: String },
 }
 

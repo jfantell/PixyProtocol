@@ -22,6 +22,12 @@ pub enum ContractError {
     #[error("Cannot withdraw funds")]
     CannotWidthdrawFunds {},
 
+    #[error("Unable to fund project")]
+    UnableToFundProject {},
+
+    #[error("Unable to acquire yield")]
+    UnableToAcquireYield,
+
     #[error("Unable to update contract state")]
     UnableToUpdateContractState
 }

@@ -16,6 +16,7 @@ pub enum ProjectStatus {
 #[serde(rename_all = "snake_case")]
 pub struct Project {
     pub creator: Addr,
+    pub creation_date: Timestamp,
     pub project_status: ProjectStatus,
     pub target_principal_amount: Uint128,
     pub target_yield_amount: Uint128,
