@@ -5,11 +5,45 @@
     {
       "type": "object",
       "required": [
-        "get_count"
+        "get_project_status"
       ],
       "properties": {
-        "get_count": {
-          "type": "object"
+        "get_project_status": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_user_balance"
+      ],
+      "properties": {
+        "get_user_balance": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "user": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
         }
       },
       "additionalProperties": false

@@ -5,11 +5,31 @@
     {
       "type": "object",
       "required": [
-        "increment"
+        "create_project"
       ],
       "properties": {
-        "increment": {
-          "type": "object"
+        "create_project": {
+          "type": "object",
+          "required": [
+            "name",
+            "project_deadline",
+            "target_principal_amount",
+            "target_yield_amount"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "project_deadline": {
+              "$ref": "#/definitions/Timestamp"
+            },
+            "target_principal_amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "target_yield_amount": {
+              "$ref": "#/definitions/Uint128"
+            }
+          }
         }
       },
       "additionalProperties": false
@@ -17,23 +37,132 @@
     {
       "type": "object",
       "required": [
-        "reset"
+        "update_admin"
       ],
       "properties": {
-        "reset": {
+        "update_admin": {
+          "type": "object",
+          "properties": {
+            "new_admin": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "fund_project"
+      ],
+      "properties": {
+        "fund_project": {
           "type": "object",
           "required": [
-            "count"
+            "name"
           ],
           "properties": {
-            "count": {
-              "type": "integer",
-              "format": "int32"
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "widthdraw_principal"
+      ],
+      "properties": {
+        "widthdraw_principal": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "change_project_status"
+      ],
+      "properties": {
+        "change_project_status": {
+          "type": "object",
+          "required": [
+            "name",
+            "project_status"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "project_status": {
+              "$ref": "#/definitions/ProjectStatus"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "widthdraw_yield"
+      ],
+      "properties": {
+        "widthdraw_yield": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
             }
           }
         }
       },
       "additionalProperties": false
     }
-  ]
+  ],
+  "definitions": {
+    "ProjectStatus": {
+      "type": "string",
+      "enum": [
+        "FundingInProgress",
+        "TargetMet",
+        "ProjectOffTrack"
+      ]
+    },
+    "Timestamp": {
+      "description": "A point in time in nanosecond precision.\n\nThis type can represent times from 1970-01-01T00:00:00Z to 2554-07-21T23:34:33Z.\n\n## Examples\n\n``` # use cosmwasm_std::Timestamp; let ts = Timestamp::from_nanos(1_000_000_202); assert_eq!(ts.nanos(), 1_000_000_202); assert_eq!(ts.seconds(), 1); assert_eq!(ts.subsec_nanos(), 202);\n\nlet ts = ts.plus_seconds(2); assert_eq!(ts.nanos(), 3_000_000_202); assert_eq!(ts.seconds(), 3); assert_eq!(ts.subsec_nanos(), 202); ```",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Uint64"
+        }
+      ]
+    },
+    "Uint128": {
+      "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+      "type": "string"
+    },
+    "Uint64": {
+      "description": "A thin wrapper around u64 that is using strings for JSON encoding/decoding, such that the full u64 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u64` to get the value out:\n\n``` # use cosmwasm_std::Uint64; let a = Uint64::from(42u64); assert_eq!(a.u64(), 42);\n\nlet b = Uint64::from(70u32); assert_eq!(b.u64(), 70); ```",
+      "type": "string"
+    }
+  }
 }

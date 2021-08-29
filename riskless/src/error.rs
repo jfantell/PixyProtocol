@@ -12,8 +12,16 @@ pub enum ContractError {
 
     #[error("Unauthorized")]
     Unauthorized {},
-    // Add any other custom errors you like here.
-    // Look at https://docs.rs/thiserror/1.0.21/thiserror/ for details.
-    // #[error("Not an admin!")]
-    // AdminError(AdminError)
+
+    #[error("Must deposit at least $20 UST")]
+    DepositMinimumError {},
+
+    #[error("Invalid address")]
+    InvalidAddress {},
+
+    #[error("Cannot withdraw funds")]
+    CannotWidthdrawFunds {},
+
+    #[error("Unable to update contract state")]
+    UnableToUpdateContractState
 }

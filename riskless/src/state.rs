@@ -2,26 +2,31 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::{Addr, Timestamp, Uint128};
-use cw_storage_plus::{Map};
+use cw_storage_plus::{Map, Item};
 use cw_controllers::{Admin};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub enum FundingStatus {
-    Open,
-    Closed,
+pub enum ProjectStatus {
+    FundingInProgress,
+    TargetMet,
+    ProjectOffTrack
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Project {
-    pub name: String,
     pub creator: Addr,
-    pub fund_status: FundingStatus,
-    pub fund_target_amount: Uint128,
-    pub fund_deadline: Timestamp,
+    pub project_status: ProjectStatus,
+    pub target_principal_amount: Uint128,
+    pub target_yield_amount: Uint128,
+    pub principal_amount: Uint128,
     pub project_deadline: Timestamp,
-    pub fund_amount: Uint128,
-    pub fund_yield_amount: Uint128,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Config {
+    pub anchor_earn_contract_address: String
 }
 
 /*
@@ -50,3 +55,8 @@ pub const BALANCES: Map<(&Addr, &[u8]), Uint128> = Map::new("balances");
     Store contact admin
 */
 pub const ADMIN: Admin = Admin::new("admin");
+
+/*
+    Config
+*/
+pub const CONFIG: Item<Config> = Item::new("config");

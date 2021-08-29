@@ -98,7 +98,18 @@ proper description in the README.
 [Gitpod](https://www.gitpod.io/) container-based development platform will be enabled on your project by default.
 Follow [Gitpod Getting Started](https://www.gitpod.io/docs/getting-started) launch your workspace.
 
+## Helpful Commands
+
+cargo wasm: Compile smart contract
+cargo test: Run smart contract unit tests
+cargo schema: Generate message schemas
+
+rust-optimizer: Optimzies the smart contract binary for use on the blockchain
+* Must run after `. .devsetup/setup.sh` in `riskless` directory
+
 ## Contract Deployment Instructions
+
+terrad tx wasm store my_contract.wasm --from test1 --chain-id=localterra --gas=auto --fees=100000uluna --broadcast-mode=block
 
 https://tequila-lcd.terra.dev
 git clone https://github.com/terra-project/localterra
