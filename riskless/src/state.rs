@@ -51,7 +51,7 @@ pub const PROJECTS: Map<&[u8], Project> = Map::new("projects");
         500_000_000 ($500 UST)
     }
 */
-pub const BALANCES: Map<(&Addr, &[u8]), Uint128> = Map::new("balances");
+pub const BACKINGS: Map<(&Addr, &[u8]), Uint128> = Map::new("backings");
 
 /*
     Store contact admin

@@ -5,7 +5,7 @@ use cosmwasm_std::{to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo,
 
 use crate::error::ContractError;
 use crate::msg::{UserBalanceResponse, ProjectStatusResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{ProjectStatus, Project, PROJECTS, BALANCES};
+use crate::state::{ProjectStatus, Project, PROJECTS, BACKINGS};
 use crate::state::{ADMIN, CONFIG, Config};
 use crate::anchor::{deposit_stable_msg};
 
@@ -121,7 +121,7 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
     // TO-DO: Deposit to Anchor
 
     // Update user balance
-    BALANCES.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
+    BACKINGS.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
         Ok(current_amount.unwrap_or_default() + deposit_amount)
     })?;
 
@@ -148,7 +148,7 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
 // Backer withdraws their principal.
 pub fn withdraw_principal(deps: DepsMut, env: Env, info: MessageInfo, name: String) -> Result<Response, ContractError> {
     let state = PROJECTS.load(deps.storage, name.as_bytes())?;
-    let withdraw_amount = BALANCES.load(deps.storage, (&info.sender, name.as_bytes()))?;
+    let withdraw_amount = BACKINGS.load(deps.storage, (&info.sender, name.as_bytes()))?;
     let yield_ = match get_yield_amount(&deps, &env, &info, &name) {
         Ok(y) => { y },
         Err(_) => { return Err(ContractError::UnableToAcquireYield {} ) }
@@ -163,7 +163,7 @@ pub fn withdraw_principal(deps: DepsMut, env: Env, info: MessageInfo, name: Stri
             .add_attribute("sender", info.sender));
     }
     
-    BALANCES.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
+    BACKINGS.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
         Ok(current_amount.unwrap_or_default() - withdraw_amount)
     })?;
     
@@ -237,7 +237,7 @@ pub fn withdraw_yield(deps: DepsMut, env: Env, info: MessageInfo, name: String) 
         Ok(y) => { y },
         Err(_) => { return Err(ContractError::UnableToAcquireYield {} ) }
     };
-    let backer_principal = BALANCES.load(deps.storage, (&info.sender, name.as_bytes()))?;
+    let backer_principal = BACKINGS.load(deps.storage, (&info.sender, name.as_bytes()))?;
     let backer_ratio = Decimal::from_ratio(backer_principal, state.principal_amount);
     let backer_yield = yield_ * backer_ratio;
     
@@ -277,7 +277,7 @@ fn query_user_balance(deps: Deps, name : String, user: Option<String>) -> StdRes
     let user_addr = maybe_addr(deps.api, user)?;
     match user_addr {
         Some(addr) => {
-            let balance = BALANCES.load(deps.storage, (&addr, name.as_bytes()))?;
+            let balance = BACKINGS.load(deps.storage, (&addr, name.as_bytes()))?;
             Ok(UserBalanceResponse { user_balance: balance })
         }
         None => {
@@ -294,7 +294,7 @@ fn query_user_balance(deps: Deps, name : String, user: Option<String>) -> StdRes
 
 //     // match user_addr {
 //     //     Some(addr) => {
-//     //         let balance = BALANCES.load(deps.storage, (&addr, name.as_bytes()))?;
+//     //         let balance = BACKINGS.load(deps.storage, (&addr, name.as_bytes()))?;
 //     //         Ok(UserBalanceResponse { user_balance: balance })
 //     //     }
 //     //     None => {
