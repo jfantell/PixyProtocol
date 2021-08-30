@@ -1,6 +1,6 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, 
+use cosmwasm_std::{to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, 
     Response, StdResult, Timestamp, Uint128, StdError };
 
 use crate::error::ContractError;
@@ -70,7 +70,7 @@ pub fn execute(
         } => change_status(deps, env, info, name, project_status),
         ExecuteMsg::WidthdrawYield {
             name,
-        } => withdraw_yield(deps, info, name) 
+        } => withdraw_yield(deps, env, info, name) 
     }
 }
 
@@ -97,6 +97,7 @@ pub fn create_project(deps: DepsMut, env: Env, info: MessageInfo, name: String,
         .add_attribute("target_principal_amount", target_principal_amount.to_string())
         .add_attribute("target_yield_amount", target_yield_amount.to_string()))
 }
+
 pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Response, ContractError> {
     let state =  PROJECTS.load(deps.storage, name.as_bytes())?;
     // If project off track, prevent backers from funding
@@ -144,17 +145,17 @@ pub fn fund_project(deps: DepsMut, info: MessageInfo, name: String) -> Result<Re
         .add_attribute("sender", info.sender))
 }
 
+// Backer withdraws their principal.
 pub fn withdraw_principal(deps: DepsMut, env: Env, info: MessageInfo, name: String) -> Result<Response, ContractError> {
     let state = PROJECTS.load(deps.storage, name.as_bytes())?;
     let withdraw_amount = BALANCES.load(deps.storage, (&info.sender, name.as_bytes()))?;
-
-    // Backers cannot withdraw principal if the following is true:
-    // project status is TargetMet && yield target has not been met
     let yield_ = match get_yield_amount(&deps, &env, &info, &name) {
         Ok(y) => { y },
         Err(_) => { return Err(ContractError::UnableToAcquireYield {} ) }
     };
     
+    // Backers cannot withdraw principal if the following is true:
+    // project status is TargetMet && yield target has not been met
     if (state.project_status == ProjectStatus::TargetMet) && ( yield_ < state.target_yield_amount ) {
         return Ok(Response::new()
             .add_attribute("action", "widthdraw_principal")
@@ -190,9 +191,10 @@ pub fn get_yield_amount(deps: &DepsMut, env: &Env, info: &MessageInfo, name: &St
     let start_amount = state.principal_amount;
     let creation_date = state.creation_date;
     let current_date = env.block.time;
-    let daily_rate = 0.05479;
-    let number_of_days = current_date.minus_seconds(creation_date.seconds()).seconds() / (60 * 60 * 24);
-    let yield_ = (start_amount * (1.0+daily_rate)^number_of_days - start_amount);
+    let daily_rate = Decimal::percent(20) / Uint128::from(365); // 20% APY over 365 days
+    let number_of_days = Uint128::from(current_date.minus_seconds(creation_date.seconds()).seconds() / (60 * 60 * 24));
+    // Compounded interest = (initial * (1 + rate)^DAYS) - initial
+    let yield_ = (daily_rate + Decimal::one()) * (number_of_days.checked_mul(number_of_days)?) //.checked_mul(number_of_days * number_of_days); // - start_amount;
     return yield_;
 }
 
@@ -227,11 +229,31 @@ pub fn change_status(deps: DepsMut, env: Env, info: MessageInfo, name: String, p
         .add_attribute("sender", info.sender));
 }
 
-pub fn withdraw_yield(deps: DepsMut, info: MessageInfo, name: String) -> Result<Response, ContractError> {
-
+// Backer gets their yield back if project fails.
+pub fn withdraw_yield(deps: DepsMut, env: Env, info: MessageInfo, name: String) -> Result<Response, ContractError> {
     let state = PROJECTS.load(deps.storage, name.as_bytes())?;
     if (state.creator == info.sender) || ADMIN.is_admin(deps.as_ref(), &info.sender)? {}
+    let yield_ = match get_yield_amount(&deps, &env, &info, &name) {
+        Ok(y) => { y },
+        Err(_) => { return Err(ContractError::UnableToAcquireYield {} ) }
+    };
+    let backer_principal = BALANCES.load(deps.storage, (&info.sender, name.as_bytes()))?;
+    let backer_ratio = Decimal::from_ratio(backer_principal, state.principal_amount);
+    let backer_yield = yield_ * backer_ratio;
+    
+    // Return error unless project is ProjectOffTrack
+    if (state.project_status != ProjectStatus::ProjectOffTrack) {
+        return Ok(Response::new()
+            .add_attribute("action", "withdraw_yield")
+            .add_attribute("status", "cannot withdraw yield: target is still active")
+            .add_attribute("sender", info.sender)
+        )
+    }
 
+
+
+    // Calculate yield and subtract from k
+    
     Ok(Response::new()
         .add_attribute("action", "widthdraw_yield")
         .add_attribute("project_name", name)
