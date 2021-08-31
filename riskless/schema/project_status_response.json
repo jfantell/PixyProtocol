@@ -18,6 +18,7 @@
     "Project": {
       "type": "object",
       "required": [
+        "creation_date",
         "creator",
         "principal_amount",
         "project_deadline",
@@ -26,6 +27,9 @@
         "target_yield_amount"
       ],
       "properties": {
+        "creation_date": {
+          "$ref": "#/definitions/Timestamp"
+        },
         "creator": {
           "$ref": "#/definitions/Addr"
         },

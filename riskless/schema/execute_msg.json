@@ -103,15 +103,21 @@
         "change_project_status": {
           "type": "object",
           "required": [
-            "name",
-            "project_status"
+            "name"
           ],
           "properties": {
             "name": {
               "type": "string"
             },
             "project_status": {
-              "$ref": "#/definitions/ProjectStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ProjectStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           }
         }

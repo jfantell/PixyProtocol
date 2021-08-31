@@ -3,13 +3,19 @@
   "title": "InstantiateMsg",
   "type": "object",
   "properties": {
+    "a_ust_address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "admin": {
       "type": [
         "string",
         "null"
       ]
     },
-    "anchor_earn_contract_address": {
+    "anchor_money_market_address": {
       "type": [
         "string",
         "null"

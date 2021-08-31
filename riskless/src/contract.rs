@@ -187,15 +187,16 @@ pub fn withdraw_principal(deps: DepsMut, env: Env, info: MessageInfo, name: Stri
 }
 
 pub fn get_yield_amount(deps: &DepsMut, env: &Env, info: &MessageInfo, name: &String) -> Result<Uint128, ContractError> {
-    let state = PROJECTS.load(deps.storage, name.as_bytes())?;
-    let start_amount = state.principal_amount;
-    let creation_date = state.creation_date;
-    let current_date = env.block.time;
-    let daily_rate = Decimal::percent(20) / Uint128::from(365); // 20% APY over 365 days
-    let number_of_days = Uint128::from(current_date.minus_seconds(creation_date.seconds()).seconds() / (60 * 60 * 24));
-    // Compounded interest = (initial * (1 + rate)^DAYS) - initial
-    let yield_ = (daily_rate + Decimal::one()) * (number_of_days.checked_mul(number_of_days)?) //.checked_mul(number_of_days * number_of_days); // - start_amount;
-    return yield_;
+    // let state = PROJECTS.load(deps.storage, name.as_bytes())?;
+    // let start_amount = state.principal_amount;
+    // let creation_date = state.creation_date;
+    // let current_date = env.block.time;
+    // let daily_rate = Decimal::from_ratio(Decimal::percent(20), 365); // 20% APY over 365 days
+    // let number_of_days = Decimal::from_ratio(current_date.minus_seconds(creation_date.seconds()).seconds(), 60 * 60 * 24);
+    // // Compounded interest = (initial * (1 + rate)^DAYS) - initial
+    // let yield_ = (daily_rate + Decimal::one()) * (number_of_days.unwrap().checked_mul(number_of_days.unwrap())); //.checked_mul(number_of_days * number_of_days); // - start_amount;
+    let yield_ = Uint128::from(1u128);
+    return Ok(yield_);
 }
 
 pub fn change_status(deps: DepsMut, env: Env, info: MessageInfo, name: String, project_status: Option<ProjectStatus>) -> Result<Response, ContractError> {
