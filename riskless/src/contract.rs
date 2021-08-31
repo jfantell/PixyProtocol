@@ -263,9 +263,10 @@ pub fn withdraw_yield(deps: DepsMut, env: Env, info: MessageInfo, name: String) 
         )
     }
 
-
-
     // Calculate yield and subtract from k
+    BACKINGS.update(deps.storage, (&info.sender, name.as_bytes()), | current_amount | -> Result<_, ContractError> {
+        Ok(current_amount.unwrap_or_default() - backer_yield)
+    })?;
     
     Ok(Response::new()
         .add_attribute("action", "widthdraw_yield")
