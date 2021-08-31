@@ -1,6 +1,6 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, 
+use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, 
     Response, StdResult, Timestamp, Uint128, StdError };
 
 use crate::error::ContractError;
@@ -8,6 +8,11 @@ use crate::msg::{UserBalanceResponse, ProjectStatusResponse, ExecuteMsg, Instant
 use crate::state::{ProjectStatus, Project, PROJECTS, BACKINGS};
 use crate::state::{ADMIN, CONFIG, Config};
 use crate::anchor::{deposit_stable_msg};
+
+// cosmwasm_std::Decimal only has a subset of methods, so prefer rust_decimal
+use cosmwasm_std::Decimal as CwDecimal;
+use rust_decimal::prelude::ToPrimitive;
+use rust_decimal::Decimal;
 
 use cw0::{maybe_addr};
 
@@ -191,11 +196,19 @@ pub fn get_yield_amount(deps: &DepsMut, env: &Env, info: &MessageInfo, name: &St
     let start_amount = state.principal_amount;
     let creation_date = state.creation_date;
     let current_date = env.block.time;
-    let daily_rate = Decimal::percent(20) / Uint128::from(365); // 20% APY over 365 days
-    let number_of_days = Uint128::from(current_date.minus_seconds(creation_date.seconds()).seconds() / (60 * 60 * 24));
-    // Compounded interest = (initial * (1 + rate)^DAYS) - initial
-    let yield_ = (daily_rate + Decimal::one()) * (number_of_days.checked_mul(number_of_days)?) //.checked_mul(number_of_days * number_of_days); // - start_amount;
-    return yield_;
+    let number_of_days = current_date.minus_seconds(creation_date.seconds()).seconds() / (60 * 60 * 24); // 
+
+    // Compounded interest equation: (initial * (1 + rate)^DAYS) - initial
+    // TODO: switch to decimal type instead of float for correctness?
+    let daily_rate = Decimal::new(20, 2) / Decimal::new(365, 0);
+    // CwDecimal doesn't have a pow() method :sobbing_emoji:
+    let mut daily_rate_to_power = daily_rate;
+    for _ in 0..number_of_days {
+        daily_rate_to_power = daily_rate_to_power * daily_rate;
+    }
+    let yield_ = (start_amount * CwDecimal::from_str(&daily_rate_to_power.to_string()).unwrap_or(CwDecimal::zero())) - start_amount;
+    
+    return Ok(yield_);
 }
 
 pub fn change_status(deps: DepsMut, env: Env, info: MessageInfo, name: String, project_status: Option<ProjectStatus>) -> Result<Response, ContractError> {
@@ -238,11 +251,11 @@ pub fn withdraw_yield(deps: DepsMut, env: Env, info: MessageInfo, name: String) 
         Err(_) => { return Err(ContractError::UnableToAcquireYield {} ) }
     };
     let backer_principal = BACKINGS.load(deps.storage, (&info.sender, name.as_bytes()))?;
-    let backer_ratio = Decimal::from_ratio(backer_principal, state.principal_amount);
-    let backer_yield = yield_ * backer_ratio;
+    let backer_ratio = CwDecimal::from_ratio(backer_principal, state.principal_amount);
+    let backer_yield = backer_ratio * yield_;
     
     // Return error unless project is ProjectOffTrack
-    if (state.project_status != ProjectStatus::ProjectOffTrack) {
+    if state.project_status != ProjectStatus::ProjectOffTrack {
         return Ok(Response::new()
             .add_attribute("action", "withdraw_yield")
             .add_attribute("status", "cannot withdraw yield: target is still active")

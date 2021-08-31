@@ -50,6 +50,7 @@ cw-controllers = { version = "0.8.0" }
 cw20 = {version = "0.8.1" }
 cosmwasm-bignumber = {version = "2.2.0" }
 terra-cosmwasm = { version = "2.2.0" }
+rust_decimal = { version = "1.15.0" }
 
 [dev-dependencies]
 cosmwasm-schema = { version = "0.16.0" }
