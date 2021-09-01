@@ -1,0 +1,1 @@
+/media/john/RealNVME2/risklesscrowdfunding/riskless/target/wasm32-unknown-unknown/release/libriskless.rlib: /media/john/RealNVME2/risklesscrowdfunding/riskless/packages/riskless/src/factory.rs /media/john/RealNVME2/risklesscrowdfunding/riskless/packages/riskless/src/lib.rs /media/john/RealNVME2/risklesscrowdfunding/riskless/packages/riskless/src/project.rs
