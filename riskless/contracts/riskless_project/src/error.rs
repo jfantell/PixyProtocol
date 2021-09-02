@@ -28,6 +28,9 @@ pub enum ContractError {
     #[error("Unable to acquire yield")]
     UnableToAcquireYield,
 
+    #[error("Creator already withdrew yield")]
+    CreatorUnableToWithdrawYield,
+
     #[error("Unable to update contract state")]
     UnableToUpdateContractState
 }

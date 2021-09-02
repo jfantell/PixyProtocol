@@ -6,7 +6,8 @@ use cosmwasm_std::{Uint128, Addr, Timestamp};
 pub enum ProjectStatus {
     FundingInProgress,
     TargetMet,
-    ProjectOffTrack
+    ProjectClosedFail,
+    ProjectClosedSuccess
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -33,9 +34,9 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     UpdateAdmin { new_admin: Option<String> } ,
     FundProject { },
-    WidthdrawPrincipal { },
+    WithdrawPrincipal { },
     ChangeProjectStatus { project_status: Option<ProjectStatus> },
-    WidthdrawYield { },
+    WithdrawYield { },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

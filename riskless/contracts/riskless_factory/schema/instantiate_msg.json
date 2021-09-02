@@ -12,12 +12,6 @@
         "null"
       ]
     },
-    "admin": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
     "anchor_money_market_address": {
       "type": [
         "string",

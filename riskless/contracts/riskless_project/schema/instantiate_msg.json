@@ -59,7 +59,8 @@
       "enum": [
         "FundingInProgress",
         "TargetMet",
-        "ProjectOffTrack"
+        "ProjectClosedFail",
+        "ProjectClosedSuccess"
       ]
     },
     "Timestamp": {

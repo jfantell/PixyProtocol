@@ -16,7 +16,7 @@ Create Project Execution Message
 
 {
     "create_project":{
-        "name":"Willy's Wonderland 2",
+        "name":"BestFilmEver",
         "target_principal_amount":"10000000000",
         "target_yield_amount":"2000000000",
         "project_deadline":"1652172458"
@@ -25,11 +25,11 @@ Create Project Execution Message
 
 Execute Project Creation
 
-terrad tx wasm execute terra1qxxlalvsdjd07p07y3rc5fu6ll8k4tme7cye8y "{\"create_project\":{\"name\":\"Willy'sWonderland2\",\"target_principal_amount\":\"10000000000\",\"target_yield_amount\":\"2000000000\",\"project_deadline\":\"1652172458\"}}" --from test1 --chain-id=localterra --fees=10000uluna --gas=auto --broadcast-mode=block
+terrad tx wasm execute terra1qxxlalvsdjd07p07y3rc5fu6ll8k4tme7cye8y "{\"create_project\":{\"name\":\"BestFilmEver\",\"target_principal_amount\":\"10000000000\",\"target_yield_amount\":\"2000000000\",\"project_deadline\":\"1652172458\"}}" --from test1 --chain-id=localterra --fees=10000uluna --gas=auto --broadcast-mode=block
 
 Query Project Address
 
-terrad query wasm contract-store terra1qxxlalvsdjd07p07y3rc5fu6ll8k4tme7cye8y "{\"get_project_contract_address\":{\"name\":\"Willy'sWonderland2\"}}"
+terrad query wasm contract-store terra1qxxlalvsdjd07p07y3rc5fu6ll8k4tme7cye8y "{\"get_project_contract_address\":{\"name\":\"BestFilmEver\"}}"
 
 Query Project Status
 
@@ -42,6 +42,9 @@ terrad tx wasm execute terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd "{\"fund_pro
 Query User Balance For Particular Project
 
 terrad query wasm contract-store terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd "{\"get_user_balance\":{\"user\":\"terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v\"}}"
+
+Withdraw Yield
+
 
 ## Helpful Resources
 
