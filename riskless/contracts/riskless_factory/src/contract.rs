@@ -59,14 +59,14 @@ pub fn execute(
             name,
             target_principal_amount,
             target_yield_amount,
-            project_deadline,
-        } => create_project(deps, env, info, name, target_principal_amount, target_yield_amount, project_deadline),
+            fund_deadline,
+        } => create_project(deps, env, info, name, target_principal_amount, target_yield_amount, fund_deadline),
     }
 }
 
 pub fn create_project(deps: DepsMut, env: Env, info: MessageInfo, name: String,
     target_principal_amount: Uint128, target_yield_amount : Uint128, 
-    project_deadline: Timestamp) -> Result<Response, ContractError> {
+    fund_deadline: Timestamp) -> Result<Response, ContractError> {
     // Create new project
     let project = Project {
         name: name.clone(),
@@ -76,7 +76,7 @@ pub fn create_project(deps: DepsMut, env: Env, info: MessageInfo, name: String,
         target_principal_amount: target_principal_amount,
         target_yield_amount: target_yield_amount,
         principal_amount: Uint128::zero(),
-        project_deadline: project_deadline
+        fund_deadline: fund_deadline
     };
 
     if let Ok(Some(_)) = PROJECTS.may_load(deps.storage, &name.as_bytes()) {

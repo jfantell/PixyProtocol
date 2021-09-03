@@ -4,8 +4,8 @@ Factory Instantiation Message
 
 {
     "project_code_id":1,
-    "anchor_money_market_address":"terra17lmam6zguazs5q5u6z5mmx76uj63gldnse2pdp",
-    "a_ust_address": "terra17lmam6zguazs5q5u6z5mmx76uj63gldnse2pdp"
+    "anchor_money_market_address":"",
+    "a_ust_address": ""
 } 
 
 Factory Contract Instantiation Command
@@ -43,8 +43,9 @@ Query User Balance For Particular Project
 
 terrad query wasm contract-store terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd "{\"get_user_balance\":{\"user\":\"terra1x46rqay4d3cssq8gxxvqz8xt6nwlz4td20k38v\"}}"
 
-Withdraw Yield
+Withdraw Yield (Creator)
 
+terrad tx wasm execute terra1hqrdl6wstt8qzshwc6mrumpjk9338k0l93hqyd "{\"withdraw_yield\":{}}" --from test1 --chain-id=localterra --gas-prices=0.015uluna --gas=auto --gas-adjustment=1.4 --broadcast-mode=block
 
 ## Helpful Resources
 

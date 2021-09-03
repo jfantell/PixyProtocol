@@ -20,9 +20,9 @@
       "required": [
         "creation_date",
         "creator",
+        "fund_deadline",
         "name",
         "principal_amount",
-        "project_deadline",
         "project_status",
         "target_principal_amount",
         "target_yield_amount"
@@ -34,14 +34,14 @@
         "creator": {
           "$ref": "#/definitions/Addr"
         },
+        "fund_deadline": {
+          "$ref": "#/definitions/Timestamp"
+        },
         "name": {
           "type": "string"
         },
         "principal_amount": {
           "$ref": "#/definitions/Uint128"
-        },
-        "project_deadline": {
-          "$ref": "#/definitions/Timestamp"
         },
         "project_status": {
           "$ref": "#/definitions/ProjectStatus"
@@ -58,7 +58,7 @@
       "type": "string",
       "enum": [
         "FundingInProgress",
-        "TargetMet",
+        "Delivery",
         "ProjectClosedFail",
         "ProjectClosedSuccess"
       ]

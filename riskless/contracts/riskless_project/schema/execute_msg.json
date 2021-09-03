@@ -88,7 +88,7 @@
       "type": "string",
       "enum": [
         "FundingInProgress",
-        "TargetMet",
+        "Delivery",
         "ProjectClosedFail",
         "ProjectClosedSuccess"
       ]

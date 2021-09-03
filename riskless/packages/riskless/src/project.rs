@@ -5,7 +5,7 @@ use cosmwasm_std::{Uint128, Addr, Timestamp};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub enum ProjectStatus {
     FundingInProgress,
-    TargetMet,
+    Delivery,
     ProjectClosedFail,
     ProjectClosedSuccess
 }
@@ -20,7 +20,7 @@ pub struct Project {
     pub target_principal_amount: Uint128,
     pub target_yield_amount: Uint128,
     pub principal_amount: Uint128,
-    pub project_deadline: Timestamp,
+    pub fund_deadline: Timestamp,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
